@@ -6,6 +6,7 @@ from torch.autograd import Variable
 import numpy as np
 import math
 import torch.nn.functional as F
+from utils import device
 
 ## Our packages
 import gpytorch
@@ -23,15 +24,15 @@ class DKT(nn.Module):
         self.get_model_likelihood_mll() #Init model, likelihood, and mll
 
     def get_model_likelihood_mll(self, train_x=None, train_y=None):
-        if(train_x is None): train_x=torch.ones(19, 2916).cuda()
-        if(train_y is None): train_y=torch.ones(19).cuda()
+        if(train_x is None): train_x=torch.ones(19, 2916).to(device)
+        if(train_y is None): train_y=torch.ones(19).to(device)
 
         likelihood = gpytorch.likelihoods.GaussianLikelihood()
         model = ExactGPLayer(train_x=train_x, train_y=train_y, likelihood=likelihood, kernel=kernel_type)
 
-        self.model      = model.cuda()
-        self.likelihood = likelihood.cuda()
-        self.mll        = gpytorch.mlls.ExactMarginalLogLikelihood(self.likelihood, self.model).cuda()
+        self.model      = model.to(device)
+        self.likelihood = likelihood.to(device)
+        self.mll        = gpytorch.mlls.ExactMarginalLogLikelihood(self.likelihood, self.model).to(device)
         self.mse        = nn.MSELoss()
 
         return self.model, self.likelihood, self.mll
@@ -44,7 +45,7 @@ class DKT(nn.Module):
 
     def train_loop(self, epoch, optimizer):
         batch, batch_labels = get_batch(train_people)
-        batch, batch_labels = batch.cuda(), batch_labels.cuda()
+        batch, batch_labels = batch.to(device), batch_labels.to(device)
         for inputs, labels in zip(batch, batch_labels):
             optimizer.zero_grad()
             z = self.feature_extractor(inputs)
@@ -69,13 +70,13 @@ class DKT(nn.Module):
         support_ind = list(np.random.choice(list(range(19)), replace=False, size=n_support))
         query_ind   = [i for i in range(19) if i not in support_ind]
 
-        x_all = inputs.cuda()
-        y_all = targets.cuda()
+        x_all = inputs.to(device)
+        y_all = targets.to(device)
 
-        x_support = inputs[:,support_ind,:,:,:].cuda()
-        y_support = targets[:,support_ind].cuda()
+        x_support = inputs[:,support_ind,:,:,:].to(device)
+        y_support = targets[:,support_ind].to(device)
         x_query   = inputs[:,query_ind,:,:,:]
-        y_query   = targets[:,query_ind].cuda()
+        y_query   = targets[:,query_ind].to(device)
 
         # choose a random test person
         n = np.random.randint(0, len(test_people)-1)

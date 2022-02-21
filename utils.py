@@ -1,6 +1,10 @@
 import torch
 import numpy as np
 
+device = torch.device("cpu")
+if torch.cuda.is_available():
+    device = torch.device("cuda")
+
 def one_hot(y, num_class):         
     return torch.zeros((len(y), num_class)).scatter_(1, y.unsqueeze(1), 1)
 

@@ -8,6 +8,7 @@ from methods.DKT_regression import DKT
 from methods.feature_transfer_regression import FeatureTransfer
 import backbone
 import numpy as np
+from utils import device
 
 params = parse_args_regression('test_regression')
 np.random.seed(params.seed)
@@ -16,13 +17,13 @@ torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
 params.checkpoint_dir = '%scheckpoints/%s/%s_%s' % (configs.save_dir, params.dataset, params.model, params.method)
-bb           = backbone.Conv3().cuda()
+bb           = backbone.Conv3().to(device)
 
 if params.method=='DKT':
-    model = DKT(bb).cuda()
+    model = DKT(bb).to(device)
     optimizer = None
 elif params.method=='transfer':
-    model = FeatureTransfer(bb).cuda()
+    model = FeatureTransfer(bb).to(device)
     optimizer = optim.Adam([{'params':model.parameters(),'lr':0.001}])
 else:
     ValueError('Unrecognised method')

@@ -4,6 +4,7 @@ import torch.optim as optim
 import configs
 from data.qmul_loader import get_batch, train_people, test_people
 from io_utils import parse_args_regression, get_resume_file
+from utils import device
 from methods.DKT_regression import DKT
 from methods.feature_transfer_regression import FeatureTransfer
 import backbone
@@ -21,12 +22,12 @@ if not os.path.isdir(params.checkpoint_dir):
     os.makedirs(params.checkpoint_dir)
 params.checkpoint_dir = '%scheckpoints/%s/%s_%s' % (configs.save_dir, params.dataset, params.model, params.method)
 
-bb           = backbone.Conv3().cuda()
+bb           = backbone.Conv3().to(device)
 
 if params.method=='DKT':
-    model = DKT(bb).cuda()
+    model = DKT(bb).to(device)
 elif params.method=='transfer':
-    model = FeatureTransfer(bb).cuda()
+    model = FeatureTransfer(bb).to(device)
 else:
     ValueError('Unrecognised method')
 
